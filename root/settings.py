@@ -133,7 +133,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        # 'rest_framework.permissions.IsAuthenticated',  # Faqat autentifikatsiya qilinganlar kirishi mumkin
+         # 'rest_framework.permissions.IsAuthenticated',  # Faqat autentifikatsiya qilinganlar kirishi mumkin
     ),
 
 }
@@ -148,6 +148,22 @@ SWAGGER_SETTINGS = {
     },
     'USE_SESSION_AUTH': False,  # Session auth'ni o‘chirib qo‘yish (faqat token ishlatish)
 }
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,  # Muhim: SECRET_KEY noto'g'ri bo'lsa, token har qanday qiymatda ishlaydi
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+}
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
