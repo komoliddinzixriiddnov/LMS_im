@@ -59,12 +59,14 @@ class Group(BaseModel):
     description = models.TextField(null=True, blank=True)
     table = models.ForeignKey('Table', on_delete=models.SET_NULL, null=True, blank=True, related_name='groups')
 
-    def __init__(self, *args: any, **kwargs: any):
-        super().__init__(args, kwargs)
-        self.id = None
-
     def __str__(self):
         return self.title
+
+    # def __init__(self, *args: any, **kwargs: any):
+    #     super().__init__(args, kwargs)
+    #     self.id = None
+
+
 
     class Meta:
         verbose_name = 'Group'
