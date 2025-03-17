@@ -3,7 +3,6 @@ from django.shortcuts import render
 from random import randint
 
 from django.core.cache import cache
-from django.template.context_processors import request
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
@@ -31,6 +30,7 @@ class LoginAPIView(APIView):
             return Response({
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
+                "user": MeSerializer(user).data  # Foydalanuvchi ma’lumotlarini qo‘shish
             })
 
         return Response({"status":False,"detail": "Telefon raqam yoki parol noto‘g‘ri"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -148,7 +148,7 @@ class SetNewPasswordView(APIView):
 # )
 # from app_users.models import User
 #
-#
+
 # class LoginAPIView(APIView):
 #     @swagger_auto_schema(request_body=LoginSerializer)
 #     def post(self, request):
