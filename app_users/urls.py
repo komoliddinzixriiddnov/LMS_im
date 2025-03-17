@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
+
 from app_users.views import *
 app_name = 'users'
 
@@ -31,7 +32,8 @@ urlpatterns = [
     path('update/student/<int:id>/',StudentUpdateView.as_view(),name="update_student"),
     path('student-groups/<int:student_id>/', StudentGroupsAPIView.as_view(), name="student_groups"),
     path('get-students-by-ids/',GetStudentsByIds.as_view(),name='students-by-id'),
-
+    path('create/supperuser',CreateSuperAdminView.as_view(),name='create-supperuser'),
+    path('students-statistic/', StudentFilterView.as_view(), name='recent-students'),
     # parent
     path('',include(router.urls)),
 

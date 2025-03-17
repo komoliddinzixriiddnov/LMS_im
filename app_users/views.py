@@ -12,30 +12,51 @@ from app_courses.serializers import GroupsSerializer
 from app_users.serializers import *
 from app_users.models import Teacher,Student,User,Parent
 
+from django.db.models import Count, Q, Sum
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import make_aware
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+
+from app_courses.models import Group, Course
+
+from app_users.models import Student, Teacher
+
 
 #User
+# Foydalanuvchilarni ro‘yxatini olish uchun
+
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserAllSerializer
     pagination_class = Pagination
     permission_classes = [AdminUser]
 
+# Foydalanuvchi ma'lumotlarini olish uchun
 class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserAllSerializer
     lookup_field = 'id'
     permission_classes = [AdminUser]
 
+# Foydalanuvchi yaratish uchun
 class UserCreateView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserAllSerializer
     permission_classes = [AdminUser]
 
+# Foydalanuvchini yangilash uchun
 class UserUpdateView(generics.UpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserAllSerializer
     lookup_field = 'id'
     permission_classes = [AdminUser]
+
+# Foydalanuvchini o‘chirish uchun
 
 class UserDeleteView(generics.DestroyAPIView):
     queryset = User.objects.all()
@@ -44,12 +65,14 @@ class UserDeleteView(generics.DestroyAPIView):
     permission_classes = [AdminUser]
 
 #Teacher
+# O‘qituvchilar ro‘yxatini olish uchun
 class TeacherListView(ListAPIView):
     queryset = Teacher.objects.all()
     serializer_class = TeacherSerializer
     pagination_class = Pagination
     permission_classes = [AdminUser]
 
+# O‘qituvchi ma'lumotlarini olish uchun
 class TeacherUpdateView(UpdateAPIView):
     queryset = Teacher.objects.all()
     serializer_class = TeacherSerializer
@@ -62,6 +85,8 @@ class TeacherRetrieveAPIView(RetrieveAPIView):
     lookup_field = 'id'
     permission_classes = [AdminOrOwner]
 
+
+# ID lar bo‘yicha o‘qituvchilarni olish uchun
 class GetTeachersByIds(APIView):
     permission_classes = [AdminUser]
     @swagger_auto_schema(request_body=GetTeachersByIdsSerializer)
@@ -75,7 +100,7 @@ class GetTeachersByIds(APIView):
         serializer = TeacherSerializer(teachers, many=True)
 
         return Response({"teachers": serializer.data}, status=status.HTTP_200_OK)
-
+# O‘qituvchining guruhlarini olish uchun
 class TeacherCreateAPIView(APIView):
     permission_classes = [AdminUser]
 
@@ -129,14 +154,14 @@ class StudentUpdateView(UpdateAPIView):
     serializer_class = StudentSerializer
     lookup_field = 'id'
     permission_classes = [AdminUser]
-
+# O‘quvchi ma'lumotlarini olish uchun
 class StudentRetrieveAPIView(RetrieveAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     lookup_field = 'id'
     permission_classes = [AdminOrOwner]
 
-
+# ID lar bo‘yicha o‘quvchilarni olish uchun
 class GetStudentsByIds(APIView):
     permission_classes = [AdminUser]
     @swagger_auto_schema(request_body=GetStudentsByIdsSerializer)
@@ -242,4 +267,87 @@ class ParentViewSet(viewsets.ViewSet):
         parent = get_object_or_404(Parent, pk=pk)
         parent.delete()
         return Response({'status':True,'detail': 'Parent muaffaqiatli uchirildi'}, status=status.HTTP_204_NO_CONTENT)
+# Superadmin yaratish uchun
+class CreateSuperAdminView(APIView):
+    permission_classes = [AdminUser]
 
+    @swagger_auto_schema(request_body=SuperUserSerializer)
+    def post(self, request):
+        serializer = SuperUserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Superadmin successfully created"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+class StudentFilterView(APIView):
+    permission_classes = [AdminUser]
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'start_date', openapi.IN_QUERY,
+                description="Filter by start date (format: YYYY-MM-DDTHH:MM:SS)",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATETIME
+            ),
+            openapi.Parameter(
+                'end_date', openapi.IN_QUERY,
+                description="Filter by end date (format: YYYY-MM-DDTHH:MM:SS)",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATETIME
+            ),
+        ]
+    )
+    def get(self, request):
+
+        start_date = request.GET.get("start_date")  # YYYY-MM-DD
+        end_date = request.GET.get("end_date")  # YYYY-MM-DD
+
+        if not start_date or not end_date:
+            return Response(
+                {"error": "start_date va end_date berilishi shart"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            #  String sanalarni datetime obyektiga aylantiramiz
+            start_date = parse_datetime(f"{start_date} 00:00:00")
+            end_date = parse_datetime(f"{end_date} 23:59:59")
+
+            # Agar vaqt zonasi yo‘q bo‘lsa, uni UTC ga o‘tkazamiz
+            start_date = make_aware(start_date)
+            end_date = make_aware(end_date)
+
+        except Exception:
+            return Response(
+                {"error": "Sana formati noto‘g‘ri. YYYY-MM-DD bo‘lishi kerak."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        total_students = Student.objects.all()
+
+        graduated_students = Student.objects.filter(
+            group__in=Group.objects.filter(active=False),
+            created_at__gte=start_date,
+            created_at__lte=end_date
+        ).distinct()
+
+        studying_students = Student.objects.filter(
+            group__in=Group.objects.filter(active=True),
+            created_at__gte=start_date,
+            created_at__lte=end_date
+        ).distinct()
+
+        registered_students = Student.objects.filter(
+            created_at__gte=start_date,
+            created_at__lte=end_date
+        )
+        return Response({
+            "total_students": total_students.count(),
+            "register_students": registered_students.count(),
+            "graduated_students": graduated_students.count(),
+            "studying_students": studying_students.count(),
+            "date": [start_date, end_date],
+
+        }, status=status.HTTP_200_OK)

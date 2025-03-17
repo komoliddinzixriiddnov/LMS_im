@@ -2,13 +2,13 @@ from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from app_users.models import User, Student, Teacher, Parent
 
-
+# Barcha foydalanuvchilarni serializer qilish uchun
 class UserAllSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = "__all__"
 
-
+# Foydalanuvchi serializeri
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -18,7 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data['password'] = make_password(validated_data['password'])
         return super().create(validated_data)
 
-
+# O‘qituvchi serializeri
 class TeacherSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(read_only=True)
 
@@ -26,7 +26,7 @@ class TeacherSerializer(serializers.ModelSerializer):
         model = Teacher
         fields = ('id', 'user', 'courses', 'description')
 
-
+# Talaba serializeri
 class StudentSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(read_only=True)
 
@@ -34,7 +34,7 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = ('id', 'user', 'group', 'courses', 'description')
 
-
+# Ota-ona serializeri
 class ParentSerializer(serializers.ModelSerializer):
     students = StudentSerializer(many=True, read_only=True)
 
@@ -60,3 +60,13 @@ class UserAndStudentSerializer(serializers.Serializer):
     user = UserSerializer()
     student = StudentSerializer()
     parent = ParentSerializer()
+
+# Super foydalanuvchi yaratish uchun serializer
+class SuperUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['phone', 'password','full_name']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        return User.objects.create_superuser(**validated_data)

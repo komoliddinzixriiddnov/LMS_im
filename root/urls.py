@@ -24,9 +24,6 @@ urlpatterns = [
     path('api/v1/users/', include('app_users.urls', namespace='users')),
     path('api/v1/auth/', include('app_auth.urls', namespace='auth')),
     path('api/v1/courses/', include('app_courses.urls',namespace='courses')),
-    # path('api/v1/attendances/', include('app_attendance.urls', namespace='attendances')),
-    # path('api/v1/statistics/', include('app_statistics.urls', namespace='statistics')),
-    # path('api/v1/payments/', include('app_payments.urls', namespace='payments')),
 
     # Swagger va Redoc
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
