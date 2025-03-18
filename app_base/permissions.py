@@ -1,34 +1,28 @@
 from rest_framework.permissions import BasePermission
-# Faqat admin yoki staff foydalanuvchilarga ruxsat beruvchi permission
+
 class AdminUser(BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
         return request.user.is_authenticated and request.user.is_admin or request.user.is_staff
-# Admin yoki o‘qituvchilarga ruxsat beruvchi permission
+
 class AdminOrTeacher(BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
         return request.user.is_authenticated and request.user.is_teacher or request.user.is_staff or request.user.is_admin
 
-# Admin yoki talabaga ruxsat beruvchi permission
 class AdminOrStudent(BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
         return request.user.is_authenticated and request.user.is_student or request.user.is_staff or request.user.is_admin
 
-# Admin yoki obyekt egasiga ruxsat beruvchi permission
 class AdminOrOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
         if not request.user.is_authenticated:
             return False
         return request.user.is_authenticated and obj.user == request.user or request.user.is_staff or request.user.is_admin
-
-
-
-
 
 
 
