@@ -41,6 +41,15 @@ class HomeworksSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {'teacher': {'read_only': True}}
 
+    def create(self, validated_data):
+        request = self.context['request']  # Serializer context dan request olish
+        teacher = getattr(request.user, 'teacher', None)  # Teacher borligini tekshirish
+        if not teacher:
+            raise serializers.ValidationError({"teacher": "User is not linked to a teacher."})
+
+        validated_data['teacher'] = teacher  # `teacher` ni qo‘shish
+        return super().create(validated_data)
+
 class HomeworksSubmissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = HomeworkSubmission
@@ -55,6 +64,7 @@ class HomeworksReviewSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'teacher': {'read_only': True}
         }
+
 
 # Guruhdan talabalarni olib tashlash uchun serializer
 class RemoveStudentsFromGroupSerializer(serializers.Serializer):

@@ -73,7 +73,7 @@ class Student(BaseModel):
         verbose_name_plural = 'Students'
 
 class Teacher(BaseModel):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE , related_name='teacher')
     description = models.TextField(null=True, blank=True)
     courses = models.ManyToManyField('app_courses.Course',related_name='teacher', blank=True)
 

@@ -1,9 +1,4 @@
-from django.shortcuts import get_object_or_404
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
+
 from rest_framework.views import APIView
 
 from app_courses.models import Group, Subject, Course, Table, TableType, Homework, HomeworkSubmission, HomeworkReview
@@ -24,7 +19,7 @@ from drf_yasg.utils import swagger_auto_schema
 from .models import Group
 from .serializers import GroupsSerializer
 
-class Pagination(PageNumberPagination):
+class Paginations(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 100

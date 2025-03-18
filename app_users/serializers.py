@@ -22,6 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
 class TeacherSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(read_only=True)
 
+
     class Meta:
         model = Teacher
         fields = ('id', 'user', 'courses', 'description')
@@ -70,3 +71,11 @@ class SuperUserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_superuser(**validated_data)
+
+from rest_framework.fields import DateField
+from rest_framework.serializers import Serializer
+
+
+class DateFilterSerializer(Serializer):
+    start_date = DateField(required=True)
+    end_date = DateField(required=True)
