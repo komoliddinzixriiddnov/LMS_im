@@ -161,6 +161,7 @@ class StudentRetrieveAPIView(RetrieveAPIView):
     lookup_field = 'id'
     permission_classes = [AdminOrOwner]
 
+
 # ID lar bo‘yicha o‘quvchilarni olish uchun
 class GetStudentsByIds(APIView):
     permission_classes = [AdminUser]
@@ -267,7 +268,7 @@ class ParentViewSet(viewsets.ViewSet):
         parent = get_object_or_404(Parent, pk=pk)
         parent.delete()
         return Response({'status':True,'detail': 'Parent muaffaqiatli uchirildi'}, status=status.HTTP_204_NO_CONTENT)
-# Superadmin yaratish uchun
+
 class CreateSuperAdminView(APIView):
     permission_classes = [AdminUser]
 

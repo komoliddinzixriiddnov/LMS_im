@@ -1,14 +1,27 @@
 # app_courses/urls.py
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
 from .views import GroupViewSet
+from .views import *
 
 app_name = 'courses'  # app_name ni belgilang
+router = DefaultRouter()
+router.register(r'groups', GroupViewSet, basename='group')
+router.register(r'subjects', SubjectViewSet, basename='subject')
+router.register(r'courses', CourseViewSet, basename='course')
+router.register(r'tables', TableViewSet, basename='table')
+router.register(r'table-types', TableTypeViewSet, basename='table-type')
+router.register('homeworks',HomeworkViewSet,basename='homework')
+router.register('homework-submissions',HomeworkSubmissionViewSet,basename='homework-submission')
+router.register('homework-reviews',HomeworkReviewViewSet,basename='homework-review')
 
 urlpatterns = [
-    path('groups/', GroupViewSet.as_view({'get': 'list', 'post': 'create'}), name='group-list'),
-    path('groups/<int:pk>/', GroupViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='group-detail'),
-    # Boshqa yo'nalishlar...
+    path('get-groups-by-ids/',GetGroupByIds.as_view(), name='get-groups-by-ids'),
+    path('', include(router.urls)),
+
 ]
+
 
 
 '''
